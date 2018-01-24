@@ -7,6 +7,7 @@ class AutocompleteTextInput extends Component {
     super(props);
     this.state = {
       inputValue: "",
+      selectedItem: 0,
       results: []
     };
   }
@@ -28,9 +29,18 @@ class AutocompleteTextInput extends Component {
     this.setState({ results: results })
   }
 
+  setSelected(event) {
+    this.setState({ inputValue: event.target.textContent })
+  }
+
   getResultsMarkup() {
     return this.state.results.map((item, i) =>
-      <li key={i} id={i}>
+      <li 
+        key={i} 
+        id={i} 
+        className={this.state.selectedItem == i ? "selected" : ""}
+        onClick={this.setSelected.bind(this)}
+        >
         {item.slice(0, this.state.inputValue.length)}
         <strong>{item.slice(this.state.inputValue.length)}</strong>
       </li>
@@ -42,6 +52,7 @@ class AutocompleteTextInput extends Component {
       <div className="autocomplete-wrapper">
         <input 
           type="text" 
+          value={this.state.inputValue}
           onChange={this.handleInputChange.bind(this)}
           autoFocus 
         />
