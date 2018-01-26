@@ -8,7 +8,8 @@ class AutocompleteTextInput extends Component {
     this.state = {
       inputValue: "",
       selectedItem: 0,
-      results: []
+      results: [],
+      hideResults: true
     };
   }
 
@@ -18,6 +19,10 @@ class AutocompleteTextInput extends Component {
   }
 
   handleInputChange(event) {
+    if (event.target.value.length > 2)
+      this.setState({ hideResults: false });
+    else
+      this.hideResults();
     this.setState({ inputValue: event.target.value })
   }
 
@@ -30,7 +35,11 @@ class AutocompleteTextInput extends Component {
   }
 
   setSelected(event) {
-    this.setState({ inputValue: event.target.textContent })
+    this.setState({ 
+      selectedItem: event.currentTarget.id,
+      inputValue: event.currentTarget.textContent
+    })
+    this.hideResults();
   }
 
   getResultsMarkup() {
@@ -40,11 +49,31 @@ class AutocompleteTextInput extends Component {
         id={i} 
         className={this.state.selectedItem == i ? "selected" : ""}
         onClick={this.setSelected.bind(this)}
-        >
+      >
         {item.slice(0, this.state.inputValue.length)}
         <strong>{item.slice(this.state.inputValue.length)}</strong>
       </li>
     , this);
+  }
+
+  //  up=38, down=40, enter=13
+  handleKeyPress(event) {
+    const KEY_ENTER = 13,
+          KEY_UP = 38,
+          KEY_DOWN = 40;
+    if (event.keyCode ===  KEY_ENTER)
+      this.setState({ 
+        inputValue: this.state.results[this.state.selectedItem],
+        hideResults: true
+      })
+    if (event.keyCode === KEY_UP && this.state.selectedItem > 0)
+      this.setState({ selectedItem: this.state.selectedItem - 1 })
+    if (event.keyCode === KEY_DOWN && this.state.selectedItem < this.state.results.length - 1)
+      this.setState({ selectedItem: this.state.selectedItem + 1 })
+  }
+
+  hideResults() {
+    this.setState({ hideResults: true });
   }
 
   render() {
@@ -54,10 +83,12 @@ class AutocompleteTextInput extends Component {
           type="text" 
           value={this.state.inputValue}
           onChange={this.handleInputChange.bind(this)}
+          onKeyDown={this.handleKeyPress.bind(this)}
+          placeholder="Search for a city"
           autoFocus 
         />
-        {this.state.inputValue.length > 2 ?
-          <ul className="results">
+        {!this.state.hideResults ?
+          <ul className="autocomplete-results">
             {this.getResultsMarkup()}
           </ul> : null
         }
